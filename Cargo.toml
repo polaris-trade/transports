@@ -1,0 +1,48 @@
+[workspace]
+resolver = "2"
+members = ["crates/core", "crates/mio", "crates/tokio", "workspace-hack"]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.96.1"
+authors = ["0x67 <69191110+0x67@users.noreply.github.com>"]
+repository = "https://github.com/polaris-trade/transports"
+homepage = "https://github.com/polaris-trade"
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+# Intra-workspace core by path: mio/tokio depend on it directly, so a core change
+# is one bump with no git-tag re-pin hop. See root AGENTS.md#Cross-repo dependency.
+transport_core = { path = "crates/core" }
+
+# Public cross-repo observability. Unchanged URL/tag; one pin covers every member.
+observability = { git = "https://github.com/polaris-trade/observability", tag = "observability-v0.2.0" }
+observability-core = { git = "https://github.com/polaris-trade/observability", tag = "observability-core-v0.2.0" }
+
+# Shared runtime deps.
+serde = { version = "1.0.228", features = ["derive"] }
+thiserror = "2.0.18"
+parking_lot = "0.12.4"
+tracing = "0.1.44"
+socket2 = { version = "0.6.4", features = ["all"] }
+libc = "0.2.163"
+mio = { version = "1.0.4", features = ["net", "os-poll", "os-ext"] }
+tokio = { version = "1.52.3" }
+fastrand = "2.1.2"
+metrics = "0.24"
+
+# Shared dev deps.
+serde_json = "1.0.150"
+mockall = "0.15"
+rstest = "0.26.1"
+criterion = "0.8.2"
+allocation-counter = "0.8.1"
+
+# High-performance release profile. See root AGENTS.md#High-Performance Rules.
+# Cross-crate inlining + one codegen unit + abort-on-panic. Slower compile,
+# faster runtime, smaller binary. A workspace allows profiles only at the root,
+# so all members inherit this.
+[profile.release]
+lto = "fat"
+codegen-units = 1
+panic = "abort"

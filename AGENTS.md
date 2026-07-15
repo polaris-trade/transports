@@ -2,7 +2,7 @@
 
 Visibility: **PUBLIC (OSS)**. No runtime dep on, dev-dep on, or mention of any PRIVATE crate (`transport_io_uring`, `transport_afxdp`, `transport_dpdk`). See root `AGENTS.md#OSS/Private module discipline`.
 
-- Run `lat search` to find sections relevant to your task. Read them to understand the design intent before writing code.
+- Run `lat locate` to find sections relevant to your task. Read them to understand the design intent before writing code.
 - Run `lat expand` on user prompts to expand any `[[refs]]` — this resolves section names to file locations and provides context.
 
 # Post-task checklist (REQUIRED — do not skip)
@@ -49,6 +49,7 @@ Key tests can be described as sections in `lat.md/` files (e.g. `tests.md`). Add
 lat:
   require-code-mention: true
 ---
+
 # Tests
 
 Authentication and authorization test specifications.
@@ -58,9 +59,11 @@ Authentication and authorization test specifications.
 Verify credential validation and error handling for the login endpoint.
 
 ### Rejects expired tokens
+
 Tokens past their expiry timestamp are rejected with 401, even if otherwise valid.
 
 ### Handles missing password
+
 Login request without a password field returns 400 with a descriptive error.
 ```
 
@@ -214,4 +217,3 @@ When writing new tests:
 3. Gate any DB/API tests with `#[ignore]`.
 4. Document in test comments when `--ignored` flag is required.
 5. **Test behavior, not language features** — do not write tests that verify language semantics (`Option::is_some()`, type casts, serde deserialization, default trait values). Tests should verify project-specific business logic.
-

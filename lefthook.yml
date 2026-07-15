@@ -32,6 +32,14 @@ pre-commit:
     lat-check:
       run: lat check
 
+    oss-gate:
+      # PUBLIC repo: no private-backend crate name may leak into shipped source.
+      # AGENTS.md / CLAUDE.md legitimately name them in the visibility header.
+      run: |
+        if rg -n 'transport_(io_uring|afxdp|dpdk)' -g '*.rs' -g '*.toml' -g '*.md' -g '!AGENTS.md' -g '!CLAUDE.md' .; then
+          echo "private backend crate name leaked into a public file"; exit 1
+        fi
+
 # ---------------------------------------------------------------------------
 # commit-msg — Conventional Commits gate. `convco` = pure-Rust linter.
 # ---------------------------------------------------------------------------
