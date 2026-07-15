@@ -52,7 +52,7 @@ Wraps `tokio::net::TcpStream` with `SO_RCVBUF` / `SO_SNDBUF` applied via `socket
 
 `recv_burst` emits gated per-burst counters through `observability-core` instead of a hand-rolled stats struct; zero cost when the gate is off.
 
-[[crates/tokio/src/udp.rs#UdpTransport#recv_burst]] accumulates `bytes` alongside the existing `n` reap count, then, guarded by `observability_core::metrics_enabled()`, increments `transport.recv.packets` and `transport.recv.bytes` (`backend = "tokio-udp"`, the `UdpTransport::BACKEND` const) once per burst after the loop. No per-message atomic and no per-message `tracing` span; off-gate the block is skipped entirely (one thread-local `Cell` read). [[crates/tokio/examples/recv_metrics.rs#main]] wires `observability::init` with a Prometheus exporter on `127.0.0.1:9464`, self-floods a loopback socket, and reaps a bounded run so the counters are scrapeable end to end.
+[[crates/tokio/src/udp.rs#UdpTransport#recv_burst]] accumulates `bytes` alongside the existing `n` reap count, then, guarded by `observability_core::metrics_enabled()`, increments `transport.recv.packets` and `transport.recv.bytes` (`backend = "tokio-udp"`, the `UdpTransport::BACKEND` const) once per burst after the loop. No per-message atomic and no per-message `tracing` span; off-gate the block is skipped entirely (one thread-local `Cell` read). [[crates/tokio/examples/recv_metrics_tokio.rs#main]] wires `observability::init` with a Prometheus exporter on `127.0.0.1:9464`, self-floods a loopback socket, and reaps a bounded run so the counters are scrapeable end to end.
 
 ## TokioTransport
 

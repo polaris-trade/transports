@@ -18,7 +18,7 @@ Bounded slab pool with a fixed slot array and a `parking_lot` free list. Recv la
 
 ## Metrics
 
-Recv throughput exports through `observability-core`'s gated hot path instead of a hand-rolled counter struct. `metrics` is a runtime dep of the lib crate; `observability` (the backend, tracing + Prometheus/OTLP) is dev-only, wired by [[crates/mio/examples/recv_metrics.rs]].
+Recv throughput exports through `observability-core`'s gated hot path instead of a hand-rolled counter struct. `metrics` is a runtime dep of the lib crate; `observability` (the backend, tracing + Prometheus/OTLP) is dev-only, wired by [[crates/mio/examples/recv_metrics_mio.rs]].
 
 [[crates/mio/src/udp.rs#UdpTransport#recv_burst]] accumulates `bytes` across the reap loop, then behind one `observability_core::metrics_enabled()` check per burst increments `transport.recv.packets` and `transport.recv.bytes`, both labeled `backend => "mio-udp"`. Off-gate this is a single thread-local `Cell` read: no atomic, no allocation, so the `benches/recv.rs` steady-state zero-alloc assertion holds either way.
 
