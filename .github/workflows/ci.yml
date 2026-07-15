@@ -6,7 +6,24 @@ on:
   pull_request:
 
 jobs:
+  # Workspace build/test for the three public crates. Public repo: full 3-OS
+  # matrix on GitHub-hosted runners (free, unlimited). --all-features exercises
+  # transport_core's testing + observability seams across the workspace.
   rust:
     uses: polaris-trade/ci/.github/workflows/rust-ci.yml@main
     with:
       workspace-args: "--all-features"
+
+  # Fail the build if workspace-hack is stale (a dep added without regenerating)
+  # or does not unify correctly across the configured platforms.
+  hakari:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-hakari
+      - name: workspace-hack up to date
+        run: cargo hakari generate --diff
+      - name: workspace-hack unifies correctly
+        run: cargo hakari verify

@@ -1,0 +1,40 @@
+[package]
+name = "transport_mio"
+description = "Mio backend for transport_core: runtime-free DatagramSource/StreamSource recv over mio::net with a bounded slab pool"
+version = "0.4.0"
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+publish = false
+
+[dependencies]
+transport_core = { workspace = true, features = ["observability"] }
+mio = { workspace = true }
+socket2 = { workspace = true }
+parking_lot = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+workspace-hack = { version = "0.1", path = "../../workspace-hack" }
+
+[dev-dependencies]
+transport_core = { workspace = true, features = ["testing"] }
+mockall = { workspace = true }
+rstest = { workspace = true }
+tokio = { workspace = true, features = [
+  "macros",
+  "rt",
+  "rt-multi-thread",
+  "net",
+  "time",
+] }
+criterion = { workspace = true }
+allocation-counter = { workspace = true }
+observability = { workspace = true }
+
+[[bench]]
+name = "recv"
+harness = false

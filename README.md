@@ -1,121 +1,31 @@
-# transport-core
+# transports
 
-Backend-agnostic contract for the Polaris networking stack: the recv-seam
-traits, the `BufferPool` pool contract, the shared `TransportError`, and the
-serde config primitives every backend and protocol client is built on. No
-socket, ring, or syscall touches this crate. It is pure types and traits, so a
-protocol client compiles against it without pulling in any I/O backend.
+**Visibility: PUBLIC (OSS). Licensed `MIT OR Apache-2.0`.** A single Cargo virtual workspace holding the backend-agnostic recv seam (`transport_core`) and two runtime backends that implement it.
 
-## What it defines
+Every crate is zero-copy, batch-first, and recv-first, and shares one recv contract. `transport_core` owns the traits, the `BufferPool` contract, config primitives, and the shared error type; the two backends are runtime bindings of that seam. The backends depend on core **by path**, so a core change is one bump with no git-tag re-pin hop between them.
 
-### Recv seam
+## Crates
 
-Recv yields **owned frames** that carry their own bytes (a pool slab) and return
-them to the pool on `Drop`, so a frame outlives the recv call and moves across
-threads for zero-copy handoff. Recv is **sync and batch-first** so every
-backend, from an async runtime to a busy-poll kernel-bypass NIC, shares one
-path; an optional async adapter layers `.await` on top without a second recv
-implementation.
+| Crate | Path | Version | Role |
+|---|---|---|---|
+| `transport_core` | `crates/core` | 0.4.0 | Recv-seam traits, `BufferPool` contract, config, shared error. No syscalls; every backend and protocol client depends on this crate only. |
+| `transport_mio` | `crates/mio` | 0.4.0 | Runtime-free mio backend: sync busy-poll UDP `DatagramSource` + TCP `StreamSource`, caller-driven recv thread. |
+| `transport_tokio` | `crates/tokio` | 0.4.0 | Tokio backend: the same recv seam with an async readiness adapter over `tokio::net`. |
 
-- `TransportCore`: common base, `name()` plus async `send` (the low-rate path).
-- `DatagramSource`: `recv_burst(&mut out, max) -> n` reaps up to `max` owned
-  frames into a caller-preallocated `FrameBatch`. `Ok(0)` means nothing ready,
-  `PoolExhausted` means backpressure. A single recv is a burst of one.
-- `StreamSource`: `recv_into(dst: &mut [MaybeUninit<u8>]) -> n` lands bytes once
-  into caller-owned spare capacity.
-- `AsyncReady`: optional `ready().await` readiness adapter. Busy-poll backends
-  omit it so the sync core never carries a waker.
-- `AsPayload` / `RecvFrame`: the bytes-plus-metadata shape protocol code reads
-  from a frame. `RecvFrame` is the blanket `AsPayload + Send + 'static` marker.
-- `UdpTransport`: datagram-only extension, multicast join plus addressed send.
+`workspace-hack` is an internal hakari crate for feature unification; it is never released.
 
-### Pool contract
+## Dependencies
 
-`BufferPool` is the owned-handle pool: `acquire(len) -> Option<Slab>` returns
-`None` at saturation (the backpressure signal), and each `Slab` is
-`AsRef<[u8]> + Send + 'static` so it crosses `.await` points and lives in
-reassembler slots. `PoolAccess` exposes a backend's pool so a receiver can size
-its reorder window and reserve slabs before recv.
+`transport_mio` and `transport_tokio` depend on `transport_core` as an in-workspace path dependency (`features = ["observability"]`). `observability` is a public git-tag dev-dependency. There is no dependency on any private crate.
 
-### Construction and config
+## Tags and releases
 
-`TransportBind` supplies the async constructors (`bind_udp`, `connect_tcp`).
-Config primitives are serde-first so app configs ship as JSON or TOML:
-`BindConfig`, `RecvBufConfig`, `SendBufConfig`, `RingConfig`, `BatchConfig`,
-`AffinityConfig`. All are `#[non_exhaustive]`; construct with `Default` then set
-the fields you need.
+Each crate releases on its own per-crate tag: `transport_core-vX.Y.Z`, `transport_mio-vX.Y.Z`, `transport_tokio-vX.Y.Z`. release-please drives the bumps; `publish = false` (git-tag distribution, no crates.io).
 
-### Errors
+## Pinning: same-tag rule
 
-`TransportError` is the shared error type backends map I/O and pool failures
-into; protocol crates wrap it via `#[from]`. Its `Display` strings are locked as
-user-facing log lines.
-
-## Usage
-
-A receiver stays generic over the backend. It names a `DatagramSource`, never a
-concrete transport, so swapping backends needs no receiver change:
-
-```rust
-use transport_core::{AsPayload, DatagramSource, FrameBatch, TransportError};
-
-fn drain<T: DatagramSource>(
-    t: &mut T,
-    batch: &mut FrameBatch<T::Frame>,
-) -> Result<(), TransportError> {
-    match t.recv_burst(batch, 64) {
-        Ok(0) => {}                       // nothing ready, spin again
-        Ok(_n) => {
-            for frame in batch.drain() {
-                let _bytes: &[u8] = frame.payload();
-                // hand the owned frame downstream; it is Send + 'static
-            }
-        }
-        Err(TransportError::PoolExhausted { .. }) => {
-            // backpressure: stop reaping, let the kernel drop
-        }
-        Err(e) => return Err(e),
-    }
-    Ok(())
-}
-```
-
-## Backends
-
-Implementations live in their own crates and are selected by the consumer:
-
-- `transport_tokio`: Tokio async runtime backend (UDP + TCP).
-- `transport_mio`: runtime-free mio backend.
-
-## Testing harness
-
-Enable the `testing` feature for the shared conformance suites every backend
-runs, so failures line up one-to-one across backends:
-
-- `run_conformance_suite::<T>()`: construction (bind, connect, name).
-- `run_datagram_source(build)`: the recv contract (burst bound, drain to
-  `Ok(0)`, pool reclaim across a thread boundary, `PoolExhausted` backpressure).
-
-```toml
-[dev-dependencies]
-transport_core = { git = "https://github.com/polaris-trade/transport-core", tag = "transport_core-vX.Y.Z", features = ["testing"] }
-```
-
-## Dev commands
-
-```bash
-cargo nextest run
-cargo clippy --all-targets -- -D warnings
-lat check
-```
-
-MSRV `1.96.1` (pinned in `rust-toolchain.toml`). Distributed by git tag
-(`publish = false`); depend on it with `git = ..., tag = "transport_core-vX.Y.Z"`.
-
-## Docs
-
-Architecture and design rationale live in [`lat.md/lat.md`](lat.md/lat.md).
+A consumer that pulls **two or more** crates from this repo (for example `transport_core` **and** `transport_tokio`) must pin them all to the **same tag**. Cargo keys a git source by `(url, tag)`, so two crates from this one repo at two different tags resolve to two separate checkouts and duplicate `transport_core`, which fails to compile with `E0308`. Pick one tag whose commit carries every crate version you need and pin all of them to that same tag. A consumer pulling a single crate is unaffected.
 
 ## License
 
-Dual-licensed under either [MIT](LICENSE-MIT) or [Apache 2.0](LICENSE-APACHE), at your option.
+Dual-licensed under either of `MIT OR Apache-2.0` at your option. Each crate carries its own `LICENSE-MIT`, `LICENSE-APACHE`, and `NOTICE`.
