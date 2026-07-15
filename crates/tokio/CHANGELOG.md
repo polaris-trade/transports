@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
+## [0.3.2](https://github.com/polaris-trade/transports/compare/transport_tokio-v0.4.0...transport_tokio-v0.3.2) (2026-07-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* **recv:** Transport/TokioFrame/TokioEvent/TcpFrame and the RecvBatch recvmmsg helpers are gone; construct via TransportBind and consume frames through DatagramSource/StreamSource.
+
+### Features
+
+* **ci:** update deps registry ([#5](https://github.com/polaris-trade/transports/issues/5)) ([e1ba5d7](https://github.com/polaris-trade/transports/commit/e1ba5d7d22cda31c093793a9cc7014fc3056c29c))
+* **recv:** migrate tokio backend to the owned-frame recv seam ([#10](https://github.com/polaris-trade/transports/issues/10)) ([0ca0907](https://github.com/polaris-trade/transports/commit/0ca0907be33a7f2f85d6a59ddff807e3816ff8b7))
+* **telemetry:** add recv-counter ([#22](https://github.com/polaris-trade/transports/issues/22)) ([5395b58](https://github.com/polaris-trade/transports/commit/5395b5855cde83f0e42c17629416718af9eb3a5f))
+* **tokio:** implement transport_core::UdpTransport for TokioTransport ([#4](https://github.com/polaris-trade/transports/issues/4)) ([35a2a7c](https://github.com/polaris-trade/transports/commit/35a2a7c40f045b8b0bf24de27bed29482a790a7e))
+* **transport-tokio:** add VecPool, UDP + TCP transports, and Linux recvmmsg batching ([#1](https://github.com/polaris-trade/transports/issues/1)) ([8bdf0cd](https://github.com/polaris-trade/transports/commit/8bdf0cd32e8e8104c98902e539bededf019074fb))
+
+
+### Bug fixes
+
+* **tokio:** clear stale reactor readiness before async recv wait ([#18](https://github.com/polaris-trade/transports/issues/18)) ([e128021](https://github.com/polaris-trade/transports/commit/e128021db7818a917915dee5ef15699e57f0905e))
+
+
+### Refactor
+
+* **lib:** restructure into single-crate layout ([#8](https://github.com/polaris-trade/transports/issues/8)) ([dc2795b](https://github.com/polaris-trade/transports/commit/dc2795be318b3b580db743f9a3acf0936ea01cd7))
+
+
+### Tests
+
+* **bench:** add recv_burst throughput and allocation benchmark ([#14](https://github.com/polaris-trade/transports/issues/14)) ([7cc365a](https://github.com/polaris-trade/transports/commit/7cc365a0a149430e4d39d2e02d8cf2d0500a122c))
+
+
+### Build
+
+* **deps:** bump criterion to 0.8.2 ([#16](https://github.com/polaris-trade/transports/issues/16)) ([165e917](https://github.com/polaris-trade/transports/commit/165e917e08da13598c9b0b7089497e45f6dadc08))
+* **deps:** bump transport-core to v0.3.2 ([#20](https://github.com/polaris-trade/transports/issues/20)) ([095aadd](https://github.com/polaris-trade/transports/commit/095aadd0257ce43eff69616789763e03390db46a))
+* **deps:** re-tag criterion bump ([d13f7d5](https://github.com/polaris-trade/transports/commit/d13f7d5177c1e9a57e00d8dac9b7160176fb915c))
+* **workspace:** wire transports virtual workspace ([ff3a994](https://github.com/polaris-trade/transports/commit/ff3a994f67af771022adbc8898ce4cda0155def7))
+
 ## [0.4.0](https://github.com/polaris-trade/transport-tokio/compare/transport_tokio-v0.3.4...transport_tokio-v0.4.0) (2026-07-11)
 
 

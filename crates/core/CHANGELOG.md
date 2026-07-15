@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.2](https://github.com/polaris-trade/transports/compare/transport_core-v0.4.0...transport_core-v0.3.2) (2026-07-15)
+
+
+### Build
+
+* **deps:** re-tag criterion bump ([d13f7d5](https://github.com/polaris-trade/transports/commit/d13f7d5177c1e9a57e00d8dac9b7160176fb915c))
+* **workspace:** relocate transport_core into crates/core ([5665a84](https://github.com/polaris-trade/transports/commit/5665a847caa6812a006be91713d908a8939d01ef))
+* **workspace:** wire transports virtual workspace ([ff3a994](https://github.com/polaris-trade/transports/commit/ff3a994f67af771022adbc8898ce4cda0155def7))
+
 ## [0.4.0](https://github.com/polaris-trade/transport-core/compare/transport_core-v0.3.3...transport_core-v0.4.0) (2026-07-11)
 
 
