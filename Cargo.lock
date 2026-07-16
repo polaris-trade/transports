@@ -2250,7 +2250,7 @@ dependencies = [
 
 [[package]]
 name = "transport_core"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "allocation-counter",
  "fastrand",
@@ -2265,7 +2265,7 @@ dependencies = [
 
 [[package]]
 name = "transport_mio"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "allocation-counter",
  "criterion",
@@ -2284,7 +2284,7 @@ dependencies = [
 
 [[package]]
 name = "transport_tokio"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "allocation-counter",
  "criterion",
