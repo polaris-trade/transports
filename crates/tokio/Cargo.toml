@@ -1,7 +1,7 @@
 [package]
 name = "transport_tokio"
 description = "Tokio backend for transport_core: DatagramSource/StreamSource recv over tokio::net with a bounded slab pool"
-version = "0.4.1"
+version = "0.4.2"
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
+## [0.4.2](https://github.com/polaris-trade/transports/compare/transport_mio-v0.4.1...transport_mio-v0.4.2) (2026-07-16)
+
+
+### Bug fixes
+
+* **deps:** pick up observability v0.2.2 across transport crates ([899c4ae](https://github.com/polaris-trade/transports/commit/899c4ae5a37061616b3e3451d83c107dc2448182))
+
 ## [0.4.1](https://github.com/polaris-trade/transports/compare/transport_mio-v0.4.0...transport_mio-v0.4.1) (2026-07-15)
 
 
