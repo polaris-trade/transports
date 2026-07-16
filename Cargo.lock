@@ -1062,12 +1062,12 @@ dependencies = [
 
 [[package]]
 name = "observability"
-version = "0.2.0"
-source = "git+https://github.com/polaris-trade/observability?tag=observability-v0.2.0#7d2de632775001b49b66696c87ef35cccf692a26"
+version = "0.2.2"
+source = "git+https://github.com/polaris-trade/observability?tag=observability-v0.2.2#86ef6b10050328cad7f61203c95569872924eb7d"
 dependencies = [
  "metrics",
  "metrics-exporter-prometheus",
- "observability-core 0.2.0 (git+https://github.com/polaris-trade/observability?tag=observability-v0.2.0)",
+ "observability-core",
  "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry_sdk",
@@ -1080,17 +1080,8 @@ dependencies = [
 
 [[package]]
 name = "observability-core"
-version = "0.2.0"
-source = "git+https://github.com/polaris-trade/observability?tag=observability-core-v0.2.0#7d2de632775001b49b66696c87ef35cccf692a26"
-dependencies = [
- "hdrhistogram",
- "metrics",
-]
-
-[[package]]
-name = "observability-core"
-version = "0.2.0"
-source = "git+https://github.com/polaris-trade/observability?tag=observability-v0.2.0#7d2de632775001b49b66696c87ef35cccf692a26"
+version = "0.2.1"
+source = "git+https://github.com/polaris-trade/observability?tag=observability-v0.2.2#86ef6b10050328cad7f61203c95569872924eb7d"
 dependencies = [
  "hdrhistogram",
  "metrics",
@@ -2264,7 +2255,7 @@ dependencies = [
  "allocation-counter",
  "fastrand",
  "metrics",
- "observability-core 0.2.0 (git+https://github.com/polaris-trade/observability?tag=observability-core-v0.2.0)",
+ "observability-core",
  "serde",
  "serde_json",
  "thiserror",
