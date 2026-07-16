@@ -27,3 +27,13 @@ jobs:
         run: cargo hakari generate --diff
       - name: workspace-hack unifies correctly
         run: cargo hakari verify
+
+  # powerset covers testing/observability combos. bare workspace check
+  # compiles default-feature shape consumers get, which the --all-features
+  # rust job above never builds.
+  features:
+    uses: polaris-trade/ci/.github/workflows/rust-features.yml@main
+    with:
+      hack-args: -p transport_core --feature-powerset
+      extra-commands: |
+        cargo check --workspace

@@ -1,0 +1,17 @@
+name: audit
+
+on:
+  pull_request:
+    paths: ['**/Cargo.toml', 'Cargo.lock']
+  push:
+    branches: [main]
+    paths: ['**/Cargo.toml', 'Cargo.lock']
+  schedule:
+    - cron: '5 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  # RustSec advisory scan against committed Cargo.lock. Public repo, plain
+  # github-hosted runner works fine (cargo-audit reads local lockfile only).
+  audit:
+    uses: polaris-trade/ci/.github/workflows/rust-audit.yml@main
