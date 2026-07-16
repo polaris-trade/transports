@@ -16,8 +16,8 @@ license = "MIT OR Apache-2.0"
 transport_core = { path = "crates/core" }
 
 # Public cross-repo observability. Unchanged URL/tag; one pin covers every member.
-observability = { git = "https://github.com/polaris-trade/observability", tag = "observability-v0.2.0" }
-observability-core = { git = "https://github.com/polaris-trade/observability", tag = "observability-core-v0.2.0" }
+observability = { git = "https://github.com/polaris-trade/observability", tag = "observability-v0.2.2" }
+observability-core = { git = "https://github.com/polaris-trade/observability", tag = "observability-v0.2.2" }
 
 # Shared runtime deps.
 serde = { version = "1.0.228", features = ["derive"] }
