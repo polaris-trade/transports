@@ -1,3 +1,4 @@
+# ci pilot
 [workspace]
 resolver = "2"
 members = ["crates/core", "crates/mio", "crates/tokio", "workspace-hack"]
