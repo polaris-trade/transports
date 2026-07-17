@@ -79,3 +79,46 @@ fn concurrent_acquires_from_multiple_threads() {
     assert_eq!(total, 64, "all 64 slots acquired across threads");
     assert_eq!(pool.in_use(), 0, "slabs dropped on join, pool restored");
 }
+
+#[test]
+fn concurrent_acquire_drop_reclaims_full_capacity() {
+    // concurrent `Drop` free-list pushes race the reclaim path: prime Miri
+    // target for slot aliasing + data races under the manual `Sync`.
+    let pool = SharedVecPool::new(8, 128);
+    let handles: Vec<_> = (0..4)
+        .map(|_| {
+            let pool = pool.clone();
+            thread::spawn(move || {
+                for i in 0..32u8 {
+                    if let Some(mut slab) = pool.acquire(128) {
+                        let buf = slab.buf_mut();
+                        buf[0] = i;
+                        slab.set_len(1);
+                        assert_eq!(slab.as_ref(), &[i], "own slot readback intact");
+                        thread::sleep(Duration::from_micros(20));
+                    }
+                }
+            })
+        })
+        .collect();
+    for h in handles {
+        h.join().expect("join");
+    }
+    assert_eq!(
+        pool.in_use(),
+        0,
+        "every slot returned after concurrent drop"
+    );
+
+    // re-acquire full capacity: free list reclaimed exactly `capacity` slots
+    let mut held = Vec::new();
+    while let Some(s) = pool.acquire(128) {
+        held.push(s);
+    }
+    assert_eq!(held.len(), 8, "full capacity re-acquirable post reclaim");
+    assert!(
+        pool.acquire(128).is_none(),
+        "capacity exact, no phantom slot"
+    );
+    assert_eq!(pool.in_use(), 8);
+}
