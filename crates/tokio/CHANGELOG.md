@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
+## [0.4.3](https://github.com/polaris-trade/transports/compare/transport_tokio-v0.4.2...transport_tokio-v0.4.3) (2026-07-17)
+
+
+### Tests
+
+* **pool:** add cross-thread acquire/drop/reclaim miri target ([#11](https://github.com/polaris-trade/transports/issues/11)) ([5718f3d](https://github.com/polaris-trade/transports/commit/5718f3df3ccffc08f39d59b78fa22f6f6641d48c))
+
 ## [0.4.2](https://github.com/polaris-trade/transports/compare/transport_tokio-v0.4.1...transport_tokio-v0.4.2) (2026-07-16)
 
 
