@@ -1,0 +1,31 @@
+name: miri
+
+# Miri interpreter over the slab-pool ownership tests (SharedVecPool free-list +
+# Drop-based reclaim + manual Sync). PR-path triggered on the pool sources and
+# tests, plus a weekly backstop that also catches new UB as nightly Miri
+# advances. Miri is a short job, so unlike fuzz discovery it keeps a schedule.
+# Advisory (continue-on-error) until two consecutive green scheduled weeks, then
+# set advisory: false to gate on change. Public repo: GitHub-hosted Linux.
+#
+# miri-flags -Zmiri-permissive-provenance silences a benign integer-to-pointer
+# cast warning from parking_lot's lock internals (a dependency, not our code).
+
+on:
+  pull_request:
+    paths:
+      - 'crates/tokio/src/pool.rs'
+      - 'crates/mio/src/pool.rs'
+      - 'crates/tokio/tests/pool.rs'
+      - 'crates/mio/tests/pool.rs'
+      - '.github/workflows/miri.yml'
+  schedule:
+    - cron: '5 4 * * 1'
+  workflow_dispatch:
+
+jobs:
+  miri:
+    uses: polaris-trade/ci/.github/workflows/rust-miri.yml@main
+    with:
+      miri-args: '-p transport_tokio -p transport_mio --test pool'
+      miri-flags: '-Zmiri-permissive-provenance'
+      advisory: true
