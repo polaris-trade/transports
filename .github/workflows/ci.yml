@@ -10,7 +10,7 @@ jobs:
   # matrix on GitHub-hosted runners (free, unlimited). --all-features exercises
   # transport_core's testing + observability seams across the workspace.
   rust:
-    uses: polaris-trade/ci/.github/workflows/rust-ci.yml@main
+    uses: 0x67/ci/.github/workflows/rust-ci.yml@main
     with:
       workspace-args: "--all-features"
 
@@ -32,7 +32,7 @@ jobs:
   # compiles default-feature shape consumers get, which the --all-features
   # rust job above never builds.
   features:
-    uses: polaris-trade/ci/.github/workflows/rust-features.yml@main
+    uses: 0x67/ci/.github/workflows/rust-features.yml@main
     with:
       hack-args: -p transport_core --feature-powerset
       extra-commands: |

@@ -24,7 +24,7 @@ on:
 
 jobs:
   miri:
-    uses: polaris-trade/ci/.github/workflows/rust-miri.yml@main
+    uses: 0x67/ci/.github/workflows/rust-miri.yml@main
     with:
       miri-args: '-p transport_tokio -p transport_mio --test pool'
       miri-flags: '-Zmiri-permissive-provenance'
