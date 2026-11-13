@@ -115,20 +115,21 @@ The second example is invalid because `Bad Section` has no leading paragraph. `l
 
 All agents (Conductor, subagents, standalone) MUST follow this order before planning, implementation, review, investigation, writing code, or delegating research:
 
-1. Call `agentmemory/memory_recall` with task, file, and module keywords when available.
+1. Check the agent's memory for task, file, and module keywords (Claude Code: the `MEMORY.md` auto memory index).
 2. Use `lat locate` or `lat expand` for architecture and design context when `lat.md/` exists.
-3. Use Semble for semantic code search: `uvx --from "semble[mcp]" semble search "query" .`.
-4. Use exposed `fff-mcp` MCP tools (`fff-grep`, `fff-find_files`, `fff-multi_grep`) for exact/file search.
-5. Use `rust-analyzer` for Rust definitions, references, hover, diagnostics.
-6. Fall back to regular search/read tools if preferred tools are missing, fail, or lack needed capability. State fallback reason.
+3. Use the Semble MCP tool (`mcp__semble__search`) for semantic code search; if it is missing, `uvx --from "semble[mcp]" semble search "query" .`.
+4. Use the fff MCP tools (`mcp__fff__grep`, `mcp__fff__find_files`, `mcp__fff__multi_grep`) for exact text and file search. Never shell `fff`.
+5. Use the `codebase-memory` MCP graph tools for callers, callees, routes, and types before multi-file reads.
+6. Use the `LSP` tool (rust-analyzer) for Rust definitions, references, hover, diagnostics.
+7. Fall back to regular search/read tools if preferred tools are missing, fail, or lack needed capability. State fallback reason.
 
 Fallback rule: if preferred tool is missing, fails, or lacks needed capability, use regular tools and state reason in response or handoff.
 
-Subagents should try exposed `fff-mcp` tools before fallback. If unavailable, use `rg` or `find` and state reason.
+Subagents should try the fff MCP tools before fallback. If unavailable, use `rg` or `find` and state reason.
 
 Conductor prompts must repeat memory/search protocol and fallback behavior for subagents.
 
-This duplicates Claude's own global `~/.claude/CLAUDE.md` protocol on purpose — Copilot (VS Code and CLI) has no reliable user-global config inheritance, so this file is the only place Copilot will ever see it.
+This duplicates the protocol in the ai-setup plugin's `AGENTS.md` on purpose: Copilot (VS Code and CLI) has no reliable user-global config inheritance, so this file is the only place Copilot will ever see it.
 
 # Code Comment Rules (MANDATORY — WRITING, NOT REVIEW)
 
@@ -217,3 +218,41 @@ When writing new tests:
 3. Gate any DB/API tests with `#[ignore]`.
 4. Document in test comments when `--ignored` flag is required.
 5. **Test behavior, not language features** — do not write tests that verify language semantics (`Option::is_some()`, type casts, serde deserialization, default trait values). Tests should verify project-specific business logic.
+
+# Code Growth Discipline (MANDATORY pre-write gate)
+
+Workspace-wide standard (mirrors root AGENTS.md and the operator's global config). Apply before writing, not during review.
+
+- New code: sketch module layout first. One concern per file; name the seam (trait impl, venue/channel, config vs logic). Projected >600 non-test LOC or a second concern: start as mod dir, never "split later".
+- Feature work: if the result would be too coupled or push a file past ~800 non-test LOC, land a split-first refactor commit (pure moves + `pub use` re-exports, gates green, zero behavior diff), then implement. Two commits, never one mixed.
+- Cohesive single impl block: fine at any size. Trigger is mixed concerns, not LOC.
+- Test mod >40% of file: sibling `tests.rs`.
+- Split mechanics: inherent impls split across files freely; one trait impl per file; child modules see parent-private fields, siblings need `pub(super)`; move by exact line-range extraction, never retype, never uniform-dedent (raw-string fixtures corrupt silently); keep external paths via `pub use`.
+- Hot-path inline: a new concrete (non-generic) fn on a per-message/per-record path reachable across a git-dep boundary gets `#[inline]` at write time. Generic fns: nothing, MIR export covers them. `#[inline(always)]`: only with a measured delta cited.
+- Validation honesty: a gate must compile the code it claims to validate. Feature-gated modules get `--features` in every validation command, spec, and CI caller.
+
+# Useless Test Ban (MANDATORY)
+
+A test must be able to fail from a project bug. Never write:
+
+- Derive/stdlib restatement: thiserror `#[error]` string equality, `#[derive(Default)]` variant choice, `#[from]` conversion in isolation, derived Clone/Debug/Eq works, plain serde roundtrip with no custom impl, `Option::is_some` after `Some`.
+- Field echo: constructor-stores-argument, struct-literal readback, a constant restated from the definition.
+- Duplicate coverage: the branch is already covered; name the covering test and skip.
+- Mock-call-count-only asserts with no observable output checked.
+- False confidence: assertion weaker than the test name claims. Verify the actual contract via readback, or delete.
+- Copy-pasted test doubles/encoders: they live once in `tests/support/`, per crate.
+- Per-impl re-proof of a generic contract: one `assert_contract<T: Trait>` helper, called per implementation.
+
+Keep (contract gates, not useless): wire/on-disk layout pins (size, alignment, discriminant, padding, format magic), codegen drift gates, determinism/replay gates, `Display` tests with a documented ops/log-matching rationale.
+
+Review rule: any new test matching a banned class = NEEDS_REVISION. Relay packets for test-writing subagents must include this ban list.
+
+# Code Simplicity Discipline (MANDATORY pre-write gate)
+
+Workspace-wide standard (mirrors root AGENTS.md and the operator's global config). Apply before writing, not during review.
+
+- No overcomplicated or overlong code. Smallest change that meets the ask. No speculative abstraction: no trait for one impl, generic for one type, builder for two fields, config knob for one value, indirection layer "for later". One concern per fn; if it needs section comments, split it. Plain `match`/`if`/iterator chain beats layered helpers.
+- No backwards compatibility unless the user asks. Rename or change the signature and fix every call site. No `#[deprecated]` shims, `_v2` twins, old-name re-exports, dual code paths, "legacy" flags, or migration adapters. Breaking inside the workspace is fine; git history holds the old shape.
+- No slop, no anti-patterns. Slop: dead code, unused params/imports, `#[allow]` to silence instead of fix, `.clone()` to dodge a borrow, `unwrap()`/`expect()` on a lib path, stringly-typed state, bool-param flags, `Box<dyn>` where a generic fits, newtype with no invariant, re-validating already-typed input, comment narrating code, TODO placeholder instead of finishing, catch-all error swallow. Delete on sight in touched code.
+
+Review rule: any of the above in a diff = NEEDS_REVISION. Relay packets carry this section.
